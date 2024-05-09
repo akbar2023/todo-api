@@ -50,7 +50,7 @@ def read_todo(todo_id: str):
 
 # Opération Update (mettre à jour un todo spécifique)
 @app.put("/todos/{todo_id}", response_model=Todo)
-def update_todo(todo_id: str, todo: TodoNew):
+def update_todo(todo_id: str, todo: Todo):
     for index, existing_todo in enumerate(todos_db):
         if existing_todo.id == todo_id:
             todo.id = existing_todo.id
