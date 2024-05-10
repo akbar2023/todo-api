@@ -23,3 +23,21 @@ pytest -v
 ## Auth : email + password (a revoir)
 1 : Go to firebase > Authentication > Add Authentication
 2 : Project settings > Enable email + password type auth
+
+
+## Tests
+
+```
+pip install pytest
+```
+
+```
+Start testing on command promp: pytest
+```
+
+```
+Collect coverage data : coverage run -m pytest
+Generate coverage file : coverage html
+```
+
+
