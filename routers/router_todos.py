@@ -4,6 +4,8 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from classes.models import Todo, TodoNoId
 import uuid
+from database.firebase import db
+from routers.router_auth import get_current_user
 
 
 router= APIRouter(
@@ -25,15 +27,13 @@ def read_todos():
 
 # Opération Create (ajouter un nouveau todo)
 @router.post("", response_model=Todo, status_code=201)
-def create_todo(todo: TodoNoId):
+def create_todo(todo: TodoNoId, userData: int = Depends(get_current_user)):
     # Générer un UUID
     todo_id = str(uuid.uuid4())
-    # Créer le todo avec l'ID généré
-    todo_data = todo.dict()
-    todo_data["id"] = todo_id
-    new_todo = Todo(**todo_data)
-    todos_db.append(new_todo)
-    return new_todo
+    newTodo = Todo(id=str(todo_id), title=todo.title, description=todo.description)
+    # Enregistrer le todo dans Firestore
+    db.child('users').child(userData['uid']).child("todos").child(str(todo_id)).set(newTodo.model_dump(), userData['idToken'])
+    return newTodo
 
 # Opération Read (lire un todo spécifique)
 @router.get("/{todo_id}", response_model=Todo)
