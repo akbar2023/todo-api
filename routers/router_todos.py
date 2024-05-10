@@ -21,43 +21,49 @@ todos_db = []
 
 # Opération Read (lister tous les todos)
 @router.get("", response_model=list[Todo])
-def read_todos():
-    return todos_db
+async def readTodos(userData: int = Depends(get_current_user)):
+      fireBaseobject = db.child("users").child(userData['uid']).child('todos').get(userData['idToken']).val()
+      if fireBaseobject == None : return []
+      resultArray = [value for value in fireBaseobject.values()]
+      return resultArray
 
 
 # Opération Create (ajouter un nouveau todo)
 @router.post("", response_model=Todo, status_code=201)
-def create_todo(todo: TodoNoId, userData: int = Depends(get_current_user)):
-    # Générer un UUID
-    todo_id = str(uuid.uuid4())
-    newTodo = Todo(id=str(todo_id), title=todo.title, description=todo.description)
-    # Enregistrer le todo dans Firestore
-    db.child('users').child(userData['uid']).child("todos").child(str(todo_id)).set(newTodo.model_dump(), userData['idToken'])
-    return newTodo
+async def createTodo(todo: TodoNoId, userData: int = Depends(get_current_user)):
+      # Générer un UUID
+      todo_id = str(uuid.uuid4())
+      newTodo = Todo(id=str(todo_id), title=todo.title, description=todo.description)
+      # Enregistrer le todo dans Firestore
+      db.child('users').child(userData['uid']).child("todos").child(str(todo_id)).set(newTodo.model_dump(), userData['idToken'])
+      return newTodo
 
 # Opération Read (lire un todo spécifique)
 @router.get("/{todo_id}", response_model=Todo)
-def read_todo(todo_id: str):
-    for todo in todos_db:
-        if todo.id == todo_id:
-            return todo
-    raise HTTPException(status_code=404, detail="Todo not found")
+async def getById(todo_id: str, userData: dict = Depends(get_current_user)):
+    todoById = db.child("users").child(userData['uid']).child('todos').child(str(todo_id)).get(userData['idToken']).val()
+    
+    if todoById is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    todo = Todo(**todoById)
+    return todo
 
 # Opération Update (mettre à jour un todo spécifique)
-@router.put("/{todo_id}", response_model=Todo)
-def update_todo(todo_id: str, todo: Todo):
-    for index, existing_todo in enumerate(todos_db):
-        if existing_todo.id == todo_id:
-            todo.id = existing_todo.id
-            todos_db[index] = todo
-            return todo
-    raise HTTPException(status_code=404, detail="Todo not found")
+@router.patch("/{todo_id}", status_code=204)
+async def update_todo(todo_id: str, todoUpdated: TodoNoId, userData: int = Depends(get_current_user)):
+    
+    firebaseObject = db.child("users").child(userData['uid']).child('todos').child(todo_id).get(userData['idToken']).val()
+    if firebaseObject is not None:
+        todoUpdated = Todo(id=todo_id, **todoUpdated.model_dump())
+        return db.child("users").child(userData['uid']).child('todos').child(todo_id).update(todoUpdated.model_dump(), userData['idToken'] )
+    raise HTTPException(status_code= 404, detail="Todo not found")
 
 # Opération Delete (supprimer un todo spécifique)
-@router.delete("/{todo_id}", response_model=Todo)
-def delete_todo(todo_id: str):
-    for index, todo in enumerate(todos_db):
-        if todo.id == todo_id:
-            todos_db.pop(index)
-            return todo
-    raise HTTPException(status_code=404, detail="Todo not found")
+@router.delete("/{todo_id}", status_code=204)
+async def delete_todo(todo_id: str, userData: int = Depends(get_current_user)):
+    todoDelete = db.child("users").child(userData['uid']).child('todos').child(todo_id).get(userData['idToken']).val()
+    if todoDelete is None:
+      raise HTTPException(status_code=404, detail="Todo not found")
+    # Delete the Todo data
+    db.child("users").child(userData['uid']).child('todos').child(str(todo_id)).remove(userData['idToken'])
+    return None
