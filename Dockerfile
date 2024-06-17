@@ -1,8 +1,6 @@
 # Utilisation de l'image officielle Python 3.9 slim comme image de base
 FROM python:3.9-slim
 
-# Définition du répertoire de travail à /app
-
 # Copie le fichier des dépendances dans le répertoire de travail
 COPY requirements.txt .
 
