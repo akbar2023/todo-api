@@ -6,6 +6,15 @@ Projet Estiam - E4 API
 pip install -r requirements.txt
 ```
 
+### update dependencies / save new dependencies
+```
+pip freeze > requirements.txt
+```
+
+## start Docker
+```
+docker-compose up --build
+```
 
 ## Lancement de l'app :
 ```
