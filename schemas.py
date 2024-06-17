@@ -6,7 +6,13 @@ class TodoBase(BaseModel):
     description: str
 
 class TodoCreate(TodoBase):
-    pass
+    title: str
+    description: str
+
+class TodoAll(TodoBase):
+    id: int
+    title: str
+    description: str
 
 class TodoRead(TodoBase):
     id: int

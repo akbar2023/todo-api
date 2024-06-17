@@ -8,7 +8,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-@app.get("/todos", response_model=list[schemas.TodoBase])
+@app.get("/todos", response_model=list[schemas.TodoAll])
 def read_todos(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     todos = db.query(models.Todo).offset(skip).limit(limit).all()
     return todos
