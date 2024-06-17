@@ -1,1 +1,0 @@
-api_description = """ Manage your todos with this simple app """
